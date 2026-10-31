@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -107,6 +107,27 @@ describe('EdgeOps dashboard', () => {
     await user.click(screen.getByRole('button', { name: 'Refresh' }));
 
     expect((await screen.findByRole('alert')).textContent).toContain('Unable to refresh EdgeOps status.');
+    expect(screen.getByText('evt-001')).toBeTruthy();
+  });
+
+  it('retains a newly queued event when an earlier refresh completes late', async () => {
+    let resolveEvents: (events: EventRecord[]) => void;
+    const api = buildApi([]);
+    api.listEvents.mockImplementationOnce(() => new Promise<EventRecord[]>((resolve) => {
+      resolveEvents = resolve;
+    }));
+    const user = userEvent.setup();
+    render(<App api={api} />);
+
+    await user.type(screen.getByLabelText('Correlation ID'), 'evt-001');
+    await user.click(screen.getByRole('button', { name: 'Queue event' }));
+    expect(await screen.findByText('evt-001')).toBeTruthy();
+
+    await act(async () => {
+      resolveEvents!([]);
+      await Promise.resolve();
+    });
+
     expect(screen.getByText('evt-001')).toBeTruthy();
   });
 });

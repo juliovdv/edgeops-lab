@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 
 import { createBrowserApi, type DashboardApi, type HealthStatus } from './api.js';
 import { eventStatuses, eventTypes, type EventRecord, type EventStatus } from '../../../packages/contracts/src/event.js';
@@ -35,6 +35,11 @@ function formatDuration(event: EventRecord): string {
   return `${(elapsedMs / 1_000).toFixed(elapsedMs < 10_000 ? 1 : 0)} s`;
 }
 
+function mergeWithLocalEvents(loadedEvents: EventRecord[], currentEvents: EventRecord[]): EventRecord[] {
+  const loadedIds = new Set(loadedEvents.map((event) => event.id));
+  return [...currentEvents.filter((event) => !loadedIds.has(event.id)), ...loadedEvents];
+}
+
 export function App({ api = browserApi }: AppProps) {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [correlationId, setCorrelationId] = useState('');
@@ -46,13 +51,19 @@ export function App({ api = browserApi }: AppProps) {
   const [lastUpdated, setLastUpdated] = useState<Date>();
   const [queueError, setQueueError] = useState<string>();
   const [refreshError, setRefreshError] = useState<string>();
+  const enqueueRevision = useRef(0);
 
   const refreshStatus = useCallback(async (initialLoad = false) => {
+    const revisionAtStart = enqueueRevision.current;
     setIsRefreshing(true);
 
     try {
       const [loadedEvents, loadedHealth] = await Promise.all([api.listEvents(), api.getHealth()]);
-      setEvents(loadedEvents);
+      setEvents((currentEvents) => (
+        revisionAtStart === enqueueRevision.current
+          ? loadedEvents
+          : mergeWithLocalEvents(loadedEvents, currentEvents)
+      ));
       setHealth(loadedHealth);
       setLastUpdated(new Date());
       setRefreshError(undefined);
@@ -85,6 +96,7 @@ export function App({ api = browserApi }: AppProps) {
         correlationId,
         payload: { nodeId: 'dashboard' },
       });
+      enqueueRevision.current += 1;
       setEvents((current) => [created, ...current.filter((item) => item.id !== created.id)]);
       setHasLoaded(true);
       setCorrelationId('');
