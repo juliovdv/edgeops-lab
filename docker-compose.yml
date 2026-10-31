@@ -1,0 +1,80 @@
+name: edgeops-lab
+
+services:
+  localstack:
+    image: localstack/localstack:4.14.0
+    environment:
+      DEBUG: "0"
+      PERSISTENCE: "1"
+      SERVICES: dynamodb,iam,lambda,s3,sqs,sts
+    volumes:
+      - localstack-state:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - edgeops
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost.localstack.cloud:4566/_localstack/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+
+  terraform:
+    image: hashicorp/terraform:1.17.1
+    profiles: ["tools"]
+    working_dir: /workspace/infra/terraform
+    volumes:
+      - ./:/workspace
+    networks:
+      - edgeops
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      AWS_REGION: us-east-1
+      EVENTS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/edgeops-events
+      EVENTS_TABLE_NAME: edgeops-events-table
+      LOCALSTACK_ENDPOINT: http://localstack:4566
+      PORT: "3000"
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - edgeops
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+    ports:
+      - "3002:3000"
+    depends_on:
+      - api
+    networks:
+      - edgeops
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+
+networks:
+  edgeops: {}
+
+volumes:
+  localstack-state:
