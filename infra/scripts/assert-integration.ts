@@ -21,6 +21,8 @@ await new SQSClient(clientConfig).send(
   new GetQueueAttributesCommand({ QueueUrl: queueUrl, AttributeNames: ['QueueArn'] }),
 );
 await new DynamoDBClient(clientConfig).send(new DescribeTableCommand({ TableName: tableName }));
-await new S3Client(clientConfig).send(new HeadBucketCommand({ Bucket: bucketName }));
+await new S3Client({ ...clientConfig, forcePathStyle: true }).send(
+  new HeadBucketCommand({ Bucket: bucketName }),
+);
 
 console.log('LocalStack resources are reachable');

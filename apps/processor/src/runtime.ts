@@ -14,7 +14,7 @@ const clientConfig = {
   credentials: { accessKeyId: 'test', secretAccessKey: 'test' },
 };
 const dynamo = new DynamoDBClient(clientConfig);
-const s3 = new S3Client(clientConfig);
+const s3 = new S3Client({ ...clientConfig, forcePathStyle: true });
 
 function toItem(record: EventRecord): Record<string, AttributeValue> {
   const item: Record<string, AttributeValue> = {
