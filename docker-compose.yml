@@ -5,10 +5,8 @@ services:
     image: localstack/localstack:4.14.0
     environment:
       DEBUG: "0"
-      LOCALSTACK_HOST: localstack:4566
       PERSISTENCE: "1"
       SERVICES: dynamodb,iam,lambda,s3,sqs,sts
-      SQS_ENDPOINT_STRATEGY: path
     volumes:
       - localstack-state:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
@@ -44,7 +42,7 @@ services:
       dockerfile: apps/api/Dockerfile
     environment:
       AWS_REGION: us-east-1
-      EVENTS_QUEUE_URL: http://localstack:4566/queue/us-east-1/000000000000/edgeops-events
+      EVENTS_QUEUE_URL: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/edgeops-events
       EVENTS_TABLE_NAME: edgeops-events-table
       LOCALSTACK_ENDPOINT: http://localstack:4566
       PORT: "3000"

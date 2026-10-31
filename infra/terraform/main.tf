@@ -34,7 +34,7 @@ provider "aws" {
 
 data "archive_file" "processor" {
   type        = "zip"
-  source_file = "../../dist/processor/index.mjs"
+  source_file = "../../dist/processor/index.js"
   output_path = var.lambda_zip_path
 }
 
