@@ -7,16 +7,19 @@
     "node": ">=24"
   },
   "scripts": {
+    "build:processor": "esbuild apps/processor/src/runtime.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/processor/index.mjs",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.base.json"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.0.0",
     "vitest": "^4.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/client-sqs": "^3.0.0",
     "fastify": "^5.0.0",
     "zod": "^4.0.0"
