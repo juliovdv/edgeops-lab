@@ -1,0 +1,43 @@
+name: edgeops-lab
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      DEBUG: "0"
+      PERSISTENCE: "1"
+      SERVICES: dynamodb,iam,lambda,s3,sqs,sts
+    volumes:
+      - localstack-state:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - edgeops
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost.localstack.cloud:4566/_localstack/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+
+  terraform:
+    image: hashicorp/terraform:1.17.1
+    profiles: ["tools"]
+    working_dir: /workspace/infra/terraform
+    volumes:
+      - ./:/workspace
+    networks:
+      - edgeops
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+networks:
+  edgeops: {}
+
+volumes:
+  localstack-state:
