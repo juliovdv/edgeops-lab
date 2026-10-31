@@ -2,7 +2,7 @@ name: edgeops-lab
 
 services:
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:4.14.0
     environment:
       DEBUG: "0"
       PERSISTENCE: "1"
