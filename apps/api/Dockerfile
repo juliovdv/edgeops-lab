@@ -7,6 +7,6 @@ RUN npm run build:api
 
 FROM node:24-alpine
 WORKDIR /app
-COPY --from=build /workspace/dist/api/server.mjs ./server.mjs
+COPY --from=build /workspace/dist/api/server.cjs ./server.cjs
 EXPOSE 3000
-CMD ["node", "server.mjs"]
+CMD ["node", "server.cjs"]

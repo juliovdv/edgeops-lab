@@ -7,7 +7,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "build:api": "esbuild apps/api/src/server.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/api/server.mjs",
+    "build:api": "esbuild apps/api/src/server.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/api/server.cjs",
     "build:processor": "esbuild apps/processor/src/runtime.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/processor/index.mjs",
     "build:dashboard": "vite build --config apps/dashboard/vite.config.ts",
     "test": "vitest run",

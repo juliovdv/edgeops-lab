@@ -1,6 +1,9 @@
 .git
 .superpowers
 .worktrees
+.terraform
+*.tfstate
+*.tfstate.*
 node_modules
 dist
 .env
