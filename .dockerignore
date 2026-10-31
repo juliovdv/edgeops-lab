@@ -1,0 +1,7 @@
+.git
+.superpowers
+.worktrees
+node_modules
+dist
+.env
+.env.*

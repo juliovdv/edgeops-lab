@@ -112,7 +112,7 @@ resource "aws_lambda_function" "processor" {
 
   environment {
     variables = {
-      LOCALSTACK_ENDPOINT = var.localstack_endpoint
+      LOCALSTACK_ENDPOINT = "http://localhost.localstack.cloud:4566"
       EVENTS_TABLE_NAME   = aws_dynamodb_table.events.name
       EVIDENCE_BUCKET_NAME = aws_s3_bucket.evidence.bucket
     }
